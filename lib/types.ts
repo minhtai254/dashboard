@@ -27,6 +27,7 @@ export interface InspectionRecord {
   qtyMtrC: number;
   qtyMtrX: number;
   totalDefect: number;
+  inspectionDate: string;
   defects: Record<string, number>;
 }
 

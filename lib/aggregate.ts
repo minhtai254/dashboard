@@ -69,7 +69,7 @@ export function buildDefectCategoryStats(
 
   const categories: DefectCategoryStat[] = [
     { category: "S", label: "Sợi (S)", value: totals.S },
-    { category: "D", label: "Dệt (D)", value: totals.D },
+    { category: "D", label: "Đan (D)", value: totals.D },
     { category: "N", label: "Nhuộm (N)", value: totals.N },
   ];
   return categories.filter((item) => item.value > 0);
@@ -105,6 +105,5 @@ export function buildDefectTypeStats(records: InspectionRecord[]): DefectTypeSta
 
   return Array.from(map.entries())
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10);
+    .sort((a, b) => b.value - a.value);
 }

@@ -12,6 +12,12 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { InspectionRecord } from "@/lib/types";
+import { DateFilterPicker } from "@/components/DateFilterPicker";
+import {
+  EMPTY_DATE_FILTER,
+  hasActiveDateFilter,
+  type DateFilterState,
+} from "@/lib/dateFilter";
 import {
   EMPTY_FILTERS,
   FILTER_LABELS,
@@ -25,6 +31,8 @@ interface FilterBarProps {
   records: InspectionRecord[];
   filters: DashboardFilters;
   onChange: (filters: DashboardFilters) => void;
+  dateFilter: DateFilterState;
+  onDateChange: (dateFilter: DateFilterState) => void;
 }
 
 const FILTER_FIELDS: FilterField[] = ["buyer", "ocNo", "jobOrderNo", "lotNo"];
@@ -61,12 +69,11 @@ function FilterFieldInput({
   const ref = useRef<HTMLDivElement>(null);
   const Icon = FIELD_ICONS[field];
 
-  const { items: suggestions, total } = useMemo(
+  const { items: suggestions } = useMemo(
     () => getSuggestions(records, field, value, filters),
     [records, field, value, filters]
   );
 
-  const hasMore = total > suggestions.length;
   const isActive = value.trim() !== "";
 
   const setDropdownOpen = (next: boolean) => {
@@ -126,11 +133,6 @@ function FilterFieldInput({
         }}
         className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-            Gợi ý · {total} mục
-          </span>
-        </div>
         <ul className="max-h-52 overflow-auto py-1">
           {suggestions.map((item, index) => (
             <li key={item}>
@@ -138,7 +140,7 @@ function FilterFieldInput({
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => apply(item)}
-                className={`w-full px-3 py-2.5 text-left text-sm transition ${
+                className={`w-full px-3 py-2 text-left text-xs transition ${
                   index === highlight
                     ? "bg-blue-50 text-blue-700"
                     : value === item
@@ -151,28 +153,16 @@ function FilterFieldInput({
             </li>
           ))}
         </ul>
-        {hasMore ? (
-          <div className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-400">
-            Gõ thêm để lọc · +{(total - suggestions.length).toLocaleString("vi-VN")} mục
-          </div>
-        ) : null}
       </div>
     ) : null;
 
   return (
     <div ref={ref} className="relative min-w-0 flex-1">
       <label className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-        <Icon className="h-3 w-3" />
+        <Icon className="h-2.5 w-2.5" />
         {FILTER_LABELS[field]}
       </label>
       <div className="relative">
-        <div
-          className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 rounded-md p-1 ${
-            isActive ? "bg-blue-50 text-blue-600" : "text-slate-400"
-          }`}
-        >
-          <Icon className="h-3.5 w-3.5" />
-        </div>
         <input
           value={value}
           onChange={(e) => {
@@ -198,30 +188,30 @@ function FilterFieldInput({
               setDropdownOpen(false);
             }
           }}
-          placeholder={`Tất cả ${FILTER_LABELS[field]}`}
-          className={`w-full rounded-lg border border-slate-200 bg-slate-50/80 py-2 pl-9 pr-12 text-sm outline-none transition ${
+          placeholder={`Input ${FILTER_LABELS[field]}`}
+          className={`h-9 w-full rounded-lg border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-14 text-sm outline-none transition ${
             isActive
               ? "border-blue-400 bg-blue-50/60 ring-1 ring-blue-200"
               : "hover:border-slate-300 focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-200"
           }`}
         />
-        <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+        <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
           {value ? (
             <button
               type="button"
               onClick={() => onChange(field, "")}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
             </button>
           ) : null}
           <button
             type="button"
             onClick={() => setDropdownOpen(!open)}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100"
+            className="rounded p-0.5 text-slate-400 hover:bg-slate-100"
           >
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+              className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
             />
           </button>
         </div>
@@ -238,37 +228,48 @@ export function FilterBar({
   records,
   filters,
   onChange,
+  dateFilter,
+  onDateChange,
 }: FilterBarProps) {
-  const active = hasActiveFilters(filters);
+  const active = hasActiveFilters(filters) || hasActiveDateFilter(dateFilter);
 
   return (
-    <div className="pro-card relative z-30 overflow-visible rounded-[10px]">
-      {active ? (
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            type="button"
-            onClick={() => onChange(EMPTY_FILTERS)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-red-600"
-          >
-            <X className="h-3 w-3" />
-            Xóa lọc
-          </button>
-        </div>
-      ) : null}
-
-      <div
-        className={`grid gap-3 overflow-visible px-4 sm:grid-cols-2 xl:grid-cols-4 ${active ? "pb-4 pt-1" : "p-4"}`}
-      >
-        {FILTER_FIELDS.map((field) => (
-          <FilterFieldInput
-            key={field}
-            field={field}
-            value={filters[field]}
+    <div className="pro-card relative z-30 overflow-visible rounded-[10px] px-4 py-3">
+      <div className="flex items-end gap-3">
+        <div className="grid min-w-0 flex-1 gap-3 overflow-visible sm:grid-cols-2 xl:grid-cols-5">
+          <DateFilterPicker
+            value={dateFilter}
+            onChange={onDateChange}
             records={records}
-            filters={filters}
-            onChange={(f, v) => onChange({ ...filters, [f]: v })}
           />
-        ))}
+          {FILTER_FIELDS.map((field) => (
+            <FilterFieldInput
+              key={field}
+              field={field}
+              value={filters[field]}
+              records={records}
+              filters={filters}
+              onChange={(f, v) => onChange({ ...filters, [f]: v })}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            onChange(EMPTY_FILTERS);
+            onDateChange(EMPTY_DATE_FILTER);
+          }}
+          className={`mb-0.5 inline-flex w-[4.5rem] shrink-0 items-center justify-end gap-0.5 text-[10px] font-medium transition ${
+            active
+              ? "text-slate-500 hover:text-red-600"
+              : "pointer-events-none invisible"
+          }`}
+          tabIndex={active ? 0 : -1}
+          aria-hidden={!active}
+        >
+          <X className="h-3 w-3" />
+          Xóa lọc
+        </button>
       </div>
     </div>
   );

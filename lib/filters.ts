@@ -1,4 +1,9 @@
 import type { InspectionRecord } from "./types";
+import {
+  EMPTY_DATE_FILTER,
+  type DateFilterState,
+  recordMatchesDateFilter,
+} from "./dateFilter";
 
 export interface DashboardFilters {
   buyer: string;
@@ -18,7 +23,7 @@ export type FilterField = keyof DashboardFilters;
 
 export const FILTER_LABELS: Record<FilterField, string> = {
   buyer: "Buyer",
-  ocNo: "OC",
+  ocNo: "QC",
   jobOrderNo: "OD No",
   lotNo: "Lot",
 };
@@ -29,7 +34,8 @@ export function hasActiveFilters(filters: DashboardFilters): boolean {
 
 export function filterRecords(
   records: InspectionRecord[],
-  filters: DashboardFilters
+  filters: DashboardFilters,
+  dateFilter: DateFilterState = EMPTY_DATE_FILTER
 ): InspectionRecord[] {
   const buyer = filters.buyer.trim().toLowerCase();
   const ocNo = filters.ocNo.trim().toLowerCase();
@@ -41,6 +47,7 @@ export function filterRecords(
     if (ocNo && !row.ocNo.toLowerCase().includes(ocNo)) return false;
     if (jobOrderNo && !row.jobOrderNo.toLowerCase().includes(jobOrderNo)) return false;
     if (lotNo && !row.lotNo.toLowerCase().includes(lotNo)) return false;
+    if (!recordMatchesDateFilter(row, dateFilter)) return false;
     return true;
   });
 }

@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body className="h-full w-full overflow-hidden">{children}</body>
     </html>
   );
 }

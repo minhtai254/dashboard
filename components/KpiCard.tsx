@@ -3,7 +3,6 @@ import type { LucideIcon } from "lucide-react";
 interface KpiCardProps {
   title: string;
   value: string;
-  subtitle?: string;
   icon: LucideIcon;
   accent?: "yellow" | "blue" | "green" | "red" | "purple";
 }
@@ -34,29 +33,25 @@ const accentConfig = {
 export function KpiCard({
   title,
   value,
-  subtitle,
   icon: Icon,
   accent = "blue",
 }: KpiCardProps) {
   const style = accentConfig[accent];
 
   return (
-    <div className="pro-card relative overflow-hidden rounded-[10px] p-3.5">
-      <div className={`absolute left-0 top-0 h-[3px] w-full ${style.bar}`} />
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 pt-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+    <div className="pro-card relative overflow-hidden rounded-[10px] px-3 py-2">
+      <div className={`absolute left-0 top-0 h-[2px] w-full ${style.bar}`} />
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="min-w-0">
+          <p className="truncate text-[9px] font-bold uppercase tracking-wider text-slate-500">
             {title}
           </p>
-          <p className="mt-1.5 text-2xl font-bold leading-none text-slate-900">
+          <p className="mt-0.5 text-lg font-bold leading-none tracking-tight text-slate-900">
             {value}
           </p>
-          {subtitle ? (
-            <p className="mt-1 text-[10px] text-slate-400">{subtitle}</p>
-          ) : null}
         </div>
-        <div className={`shrink-0 rounded-lg p-2 ${style.icon}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`shrink-0 rounded-md p-1 ${style.icon}`}>
+          <Icon className="h-3.5 w-3.5" />
         </div>
       </div>
     </div>

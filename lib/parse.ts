@@ -1,4 +1,5 @@
 import type { InspectionRecord } from "./types";
+import { parseSheetDate } from "./dateFilter";
 
 type ScalarField = Exclude<keyof InspectionRecord, "defects">;
 
@@ -50,6 +51,11 @@ const FIELD_MAP: Record<string, ScalarField> = {
   qtymtrc: "qtyMtrC",
   qtymtrx: "qtyMtrX",
   totaldefect: "totalDefect",
+  inspectiondate: "inspectionDate",
+  date: "inspectionDate",
+  ngay: "inspectionDate",
+  ngaykiem: "inspectionDate",
+  inspectdate: "inspectionDate",
 };
 
 function normalizeHeader(header: string): string {
@@ -111,6 +117,7 @@ export function parseInspectionRows(
         qtyMtrC: 0,
         qtyMtrX: 0,
         totalDefect: 0,
+        inspectionDate: "",
         defects: {},
       };
 
@@ -119,6 +126,8 @@ export function parseInspectionRows(
         if (field) {
           if (NUMERIC_FIELDS.has(field)) {
             (record[field] as number) = parseNumber(value);
+          } else if (field === "inspectionDate") {
+            record.inspectionDate = parseSheetDate(value);
           } else {
             (record[field] as string) = value?.trim() ?? "";
           }

@@ -30,9 +30,20 @@ export const tooltipStyle = {
   borderRadius: 10,
   boxShadow: "0 8px 30px rgba(15,23,42,0.12)",
   color: "#0f172a",
-  fontSize: 13,
+  fontSize: 14,
   padding: "10px 14px",
 };
+
+export const chartAxisFontSize = 12;
+export const chartBarLabelFontSize = 12;
+export const chartPieLabelFontSize = 13;
+export const chartLegendStyle = {
+  fontSize: 11,
+  paddingTop: 4,
+  lineHeight: "16px",
+};
+export const chartLegendIconSize = 9;
+export const chartLegendHeight = 18;
 
 export const chartGrid = "#f1f5f9";
 export const chartAxis = "#94a3b8";

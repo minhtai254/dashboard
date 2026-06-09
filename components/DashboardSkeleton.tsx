@@ -1,39 +1,39 @@
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-3 px-5 py-3 pb-8">
-      <div className="pro-card-elevated p-3">
-        <div className="pro-skeleton mb-3 h-8 w-40 rounded-lg" />
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="pro-skeleton h-10 rounded-lg" />
+    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-4 py-2">
+      <div className="pro-card shrink-0 p-2">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i}>
+              <div className="pro-skeleton mb-1 h-2.5 w-10 rounded" />
+              <div className="pro-skeleton h-8 rounded-md" />
+            </div>
           ))}
         </div>
       </div>
 
-      <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="pro-card p-3">
-            <div className="pro-skeleton h-3 w-20 rounded" />
-            <div className="pro-skeleton mt-3 h-7 w-24 rounded" />
+      <section className="grid shrink-0 gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="pro-card p-2.5">
+            <div className="pro-skeleton h-2.5 w-16 rounded" />
+            <div className="pro-skeleton mt-2 h-5 w-20 rounded" />
           </div>
         ))}
       </section>
 
-      <section className="grid gap-3 lg:grid-cols-3">
-        <div className="pro-card-elevated p-3 lg:col-span-1">
-          <div className="pro-skeleton h-4 w-32 rounded" />
-          <div className="pro-skeleton mt-4 h-[200px] w-full rounded-xl" />
-        </div>
-        <div className="pro-card-elevated p-3 lg:col-span-2">
-          <div className="pro-skeleton h-4 w-32 rounded" />
-          <div className="pro-skeleton mt-4 h-[260px] w-full rounded-xl" />
-        </div>
+      <section className="grid min-h-0 flex-1 grid-cols-12 grid-rows-2 gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className={`pro-card flex min-h-0 flex-col p-2 ${
+              i % 2 === 0 ? "col-span-12 lg:col-span-3" : "col-span-12 lg:col-span-9"
+            }`}
+          >
+            <div className="pro-skeleton h-3 w-28 shrink-0 rounded" />
+            <div className="pro-skeleton mt-2 min-h-0 flex-1 rounded-lg" />
+          </div>
+        ))}
       </section>
-
-      <div className="pro-card-elevated p-3">
-        <div className="pro-skeleton h-4 w-40 rounded" />
-        <div className="pro-skeleton mt-4 h-[200px] w-full rounded-xl" />
-      </div>
     </div>
   );
 }

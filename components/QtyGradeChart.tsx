@@ -1,18 +1,15 @@
 "use client";
 
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
   Cell,
-  LabelList,
+  Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis,
-  YAxis,
 } from "recharts";
 import type { QtyGradeStat } from "@/lib/types";
-import { GRADE_COLORS, chartAxis, chartGrid, tooltipStyle } from "@/lib/chartTheme";
+import { GRADE_COLORS, chartLegendHeight, chartLegendIconSize, chartLegendStyle, chartPieLabelFontSize, tooltipStyle } from "@/lib/chartTheme";
 import { formatNumber } from "@/lib/format";
 
 interface QtyGradeChartProps {
@@ -22,7 +19,7 @@ interface QtyGradeChartProps {
 export function QtyGradeChart({ data }: QtyGradeChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex h-[220px] items-center justify-center text-sm text-slate-500">
+      <div className="flex h-full min-h-[80px] items-center justify-center text-xs text-slate-500">
         Không có dữ liệu grade
       </div>
     );
@@ -30,47 +27,75 @@ export function QtyGradeChart({ data }: QtyGradeChartProps) {
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  const chartData = data.map((item) => ({
-    ...item,
-    percent: total > 0 ? (item.value / total) * 100 : 0,
-  }));
+  const renderLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }: {
+    cx: number;
+    cy: number;
+    midAngle: number;
+    innerRadius: number;
+    outerRadius: number;
+    percent: number;
+  }) => {
+    if (percent < 0.05) return null;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#fff"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={chartPieLabelFontSize}
+        fontWeight={600}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   return (
-    <div className="h-[240px] w-full overflow-visible">
+    <div className="h-full min-h-0 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 28, right: 12, left: 4, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
-          <XAxis
-            dataKey="label"
-            stroke={chartAxis}
-            fontSize={11}
-            tickLine={false}
-          />
-          <YAxis
-            stroke={chartAxis}
-            fontSize={11}
-            tickFormatter={(v) => formatNumber(v, 0)}
-          />
+        <PieChart margin={{ top: 0, right: 0, bottom: 4, left: 0 }}>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="label"
+            cx="50%"
+            cy="42%"
+            innerRadius="38%"
+            outerRadius="68%"
+            paddingAngle={2}
+            labelLine={false}
+            label={renderLabel}
+          >
+            {data.map((entry) => (
+              <Cell key={entry.grade} fill={GRADE_COLORS[entry.grade]} />
+            ))}
+          </Pie>
           <Tooltip
             contentStyle={tooltipStyle}
             formatter={(value: number, _name, props) => {
-              const pct = props.payload.percent?.toFixed(1) ?? "0";
-              return [`${formatNumber(value)} Kgs (${pct}%)`, "Sản lượng"];
+              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0";
+              return [`${formatNumber(value)} Kgs (${pct}%)`, props.payload.label];
             }}
           />
-          <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-            {chartData.map((entry) => (
-              <Cell key={entry.grade} fill={GRADE_COLORS[entry.grade]} />
-            ))}
-            <LabelList
-              dataKey="value"
-              position="top"
-              fontSize={10}
-              fill="#334155"
-              formatter={(v: number) => formatNumber(v, 0)}
-            />
-          </Bar>
-        </BarChart>
+          <Legend
+            verticalAlign="bottom"
+            iconType="circle"
+            height={chartLegendHeight}
+            iconSize={chartLegendIconSize}
+            wrapperStyle={chartLegendStyle}
+          />
+        </PieChart>
       </ResponsiveContainer>
     </div>
   );

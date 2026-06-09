@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import type { DefectCategoryStat } from "@/lib/types";
-import { CATEGORY_COLORS, tooltipStyle } from "@/lib/chartTheme";
+import { CATEGORY_COLORS, chartLegendHeight, chartLegendIconSize, chartLegendStyle, chartPieLabelFontSize, tooltipStyle } from "@/lib/chartTheme";
 import { formatNumber } from "@/lib/format";
 
 interface DefectCategoryChartProps {
@@ -19,7 +19,7 @@ interface DefectCategoryChartProps {
 export function DefectCategoryChart({ data }: DefectCategoryChartProps) {
   if (data.length === 0) {
     return (
-      <div className="flex h-[200px] items-center justify-center text-sm text-slate-500">
+      <div className="flex h-full min-h-[80px] items-center justify-center text-xs text-slate-500">
         Không có dữ liệu lỗi
       </div>
     );
@@ -53,7 +53,7 @@ export function DefectCategoryChart({ data }: DefectCategoryChartProps) {
         fill="#fff"
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={11}
+        fontSize={chartPieLabelFontSize}
         fontWeight={600}
       >
         {`${(percent * 100).toFixed(0)}%`}
@@ -62,47 +62,44 @@ export function DefectCategoryChart({ data }: DefectCategoryChartProps) {
   };
 
   return (
-    <div className="w-full overflow-visible">
-      <div className="h-[200px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="label"
-              cx="50%"
-              cy="42%"
-              innerRadius={48}
-              outerRadius={72}
-              paddingAngle={2}
-              labelLine={false}
-              label={renderLabel}
-            >
-              {data.map((entry) => (
-                <Cell
-                  key={entry.category}
-                  fill={CATEGORY_COLORS[entry.category]}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={tooltipStyle}
-              formatter={(value: number, _name, props) => {
-                const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0";
-                return [`${formatNumber(value, 0)} (${pct}%)`, props.payload.label];
-              }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              iconType="circle"
-              wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <p className="mt-1 text-center text-xs font-medium text-slate-500">
-        Tổng: {formatNumber(total, 0)} lỗi
-      </p>
+    <div className="h-full min-h-0 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart margin={{ top: 0, right: 0, bottom: 4, left: 0 }}>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="label"
+            cx="50%"
+            cy="42%"
+            innerRadius="38%"
+            outerRadius="68%"
+            paddingAngle={2}
+            labelLine={false}
+            label={renderLabel}
+          >
+            {data.map((entry) => (
+              <Cell
+                key={entry.category}
+                fill={CATEGORY_COLORS[entry.category]}
+              />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={tooltipStyle}
+            formatter={(value: number, _name, props) => {
+              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0";
+              return [`${formatNumber(value, 0)} (${pct}%)`, props.payload.label];
+            }}
+          />
+          <Legend
+            verticalAlign="bottom"
+            iconType="circle"
+            height={chartLegendHeight}
+            iconSize={chartLegendIconSize}
+            wrapperStyle={chartLegendStyle}
+          />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }

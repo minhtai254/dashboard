@@ -9,6 +9,7 @@
   --accent: #3b82f6;
   --sidebar: #0f172a;
   --radius: 10px;
+  --dashboard-zoom: 0.8;
 }
 
 * {
@@ -17,17 +18,20 @@
 
 html {
   scroll-behavior: smooth;
+  zoom: var(--dashboard-zoom);
+  height: calc(100dvh / var(--dashboard-zoom));
+  width: calc(100vw / var(--dashboard-zoom));
+  overflow: hidden;
 }
 
 html,
 body {
-  min-height: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 body {
+  height: 100%;
+  width: 100%;
   background: var(--background);
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -35,6 +39,9 @@ body {
 }
 
 .pro-page-bg {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
   background-color: var(--background);
 }
 
