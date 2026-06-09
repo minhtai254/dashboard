@@ -94,12 +94,12 @@ export function Dashboard() {
       />
 
       <main className="ml-[248px] min-h-screen">
-        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 px-5 py-2.5 backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-6 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                  Inspection Overview
+                  QC OPERATIONAL DASHBOARD
                 </h2>
                 {isFiltered && hasData ? (
                   <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-700">
@@ -158,11 +158,7 @@ export function Dashboard() {
         ) : !hasData ? (
           <DashboardSkeleton />
         ) : (
-          <div
-            className={`space-y-3 px-5 py-3 pb-8 transition-opacity duration-300 ${
-              refreshing ? "opacity-70" : "opacity-100"
-            }`}
-          >
+          <div className="space-y-4 px-6 py-4 pb-8">
             {error ? (
               <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -174,11 +170,9 @@ export function Dashboard() {
               records={data!.records}
               filters={filters}
               onChange={setFilters}
-              resultCount={filteredRecords.length}
-              totalCount={data!.records.length}
             />
 
-            <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
               <KpiCard
                 title="Tổng dòng"
                 value={formatNumber(view!.summary.totalRecords, 0)}
@@ -220,7 +214,7 @@ export function Dashboard() {
               />
             </section>
 
-            <section className="grid gap-3 overflow-visible lg:grid-cols-3">
+            <section className="grid gap-4 overflow-visible lg:grid-cols-3">
               <ChartCard
                 title="Phân loại lỗi"
                 subtitle="Sợi (S) · Dệt (D) · Nhuộm (N)"
@@ -241,7 +235,7 @@ export function Dashboard() {
               </ChartCard>
             </section>
 
-            <section className="grid gap-3 overflow-visible lg:grid-cols-3">
+            <section className="grid gap-4 overflow-visible lg:grid-cols-3">
               <ChartCard
                 title="Phân bổ Grade"
                 subtitle="Qty Kgs theo A / B / C / X"

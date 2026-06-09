@@ -1,10 +1,10 @@
 import {
-  BarChart3,
   Database,
   ExternalLink,
   LayoutDashboard,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 
 interface SidebarProps {
   sheetUrl: string;
@@ -17,16 +17,20 @@ export function Sidebar({ sheetUrl, sheetTab, fetchedAt }: SidebarProps) {
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[248px] flex-col bg-[#0f172a] text-white">
       <div className="border-b border-white/10 px-5 py-6">
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 shadow-lg shadow-blue-500/25">
-              <BarChart3 className="h-5 w-5 text-white" />
-            </div>
-            <div className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0f172a] bg-emerald-400" />
+          <div className="rounded-xl bg-white p-1.5 shadow-lg shadow-blue-500/10">
+            <Image
+              src="/tc-logo.png"
+              alt="Thanh Cong"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+              priority
+            />
           </div>
           <div>
-            <h1 className="text-base font-bold tracking-tight">SLPC</h1>
+            <h1 className="text-base font-bold tracking-tight">Quality Control</h1>
             <p className="text-[11px] font-medium uppercase tracking-widest text-slate-400">
-              Quality Intel
+              Dyeing Dept.
             </p>
           </div>
         </div>

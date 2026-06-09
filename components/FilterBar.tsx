@@ -6,10 +6,8 @@ import {
   Building2,
   ChevronDown,
   FileText,
-  Filter,
   Hash,
   Layers,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -27,8 +25,6 @@ interface FilterBarProps {
   records: InspectionRecord[];
   filters: DashboardFilters;
   onChange: (filters: DashboardFilters) => void;
-  resultCount: number;
-  totalCount: number;
 }
 
 const FILTER_FIELDS: FilterField[] = ["buyer", "ocNo", "jobOrderNo", "lotNo"];
@@ -203,10 +199,10 @@ function FilterFieldInput({
             }
           }}
           placeholder={`Tất cả ${FILTER_LABELS[field]}`}
-          className={`w-full rounded-lg border py-2 pl-9 pr-12 text-sm outline-none transition ${
+          className={`w-full rounded-lg border border-slate-200 bg-slate-50/80 py-2 pl-9 pr-12 text-sm outline-none transition ${
             isActive
-              ? "border-blue-300 bg-blue-50/50 ring-2 ring-blue-500/20"
-              : "border-slate-200 bg-white hover:border-slate-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/15"
+              ? "border-blue-400 bg-blue-50/60 ring-1 ring-blue-200"
+              : "hover:border-slate-300 focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-200"
           }`}
         />
         <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
@@ -242,51 +238,27 @@ export function FilterBar({
   records,
   filters,
   onChange,
-  resultCount,
-  totalCount,
 }: FilterBarProps) {
   const active = hasActiveFilters(filters);
-  const activeCount = Object.values(filters).filter((v) => v.trim()).length;
 
   return (
-    <div className="pro-card-elevated relative z-30 overflow-visible">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-3 py-2">
-        <div className="flex items-center gap-2">
-          <div className="rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 p-1.5 shadow-sm">
-            <SlidersHorizontal className="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-slate-900">Bộ lọc dữ liệu</h3>
-            <p className="text-[11px] text-slate-500">
-              {resultCount.toLocaleString("vi-VN")} / {totalCount.toLocaleString("vi-VN")} dòng
-            </p>
-          </div>
+    <div className="pro-card relative z-30 overflow-visible rounded-[10px]">
+      {active ? (
+        <div className="flex justify-end px-4 pt-3">
+          <button
+            type="button"
+            onClick={() => onChange(EMPTY_FILTERS)}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-red-600"
+          >
+            <X className="h-3 w-3" />
+            Xóa lọc
+          </button>
         </div>
-        <div className="flex items-center gap-2">
-          {active ? (
-            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-              {activeCount} đang lọc
-            </span>
-          ) : (
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
-              <Filter className="mr-1 inline h-3 w-3" />
-              Tất cả dữ liệu
-            </span>
-          )}
-          {active ? (
-            <button
-              type="button"
-              onClick={() => onChange(EMPTY_FILTERS)}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-            >
-              <X className="h-3.5 w-3.5" />
-              Xóa lọc
-            </button>
-          ) : null}
-        </div>
-      </div>
+      ) : null}
 
-      <div className="grid gap-2 overflow-visible p-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        className={`grid gap-3 overflow-visible px-4 sm:grid-cols-2 xl:grid-cols-4 ${active ? "pb-4 pt-1" : "p-4"}`}
+      >
         {FILTER_FIELDS.map((field) => (
           <FilterFieldInput
             key={field}

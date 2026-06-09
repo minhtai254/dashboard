@@ -185,8 +185,8 @@ export function DataTable({ records }: DataTableProps) {
   };
 
   return (
-    <div className="pro-card-elevated overflow-hidden">
-      <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="pro-card overflow-hidden rounded-[10px]">
+      <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-gradient-to-br from-slate-600 to-slate-800 p-2 shadow-sm">
             <Table2 className="h-4 w-4 text-white" />
