@@ -66,3 +66,4 @@ export const chartLegendHeight = 18;
 
 export const chartGrid = "#f1f5f9";
 export const chartAxis = "#94a3b8";
+export const buyerDefectRateColor = "#E66C37";

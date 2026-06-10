@@ -18,6 +18,7 @@ import {
   chartAxisFontSize,
   chartBarLabelFontSize,
   chartGrid,
+  pieChartAnimation,
   tooltipStyle,
 } from "@/lib/chartTheme";
 import { formatNumber } from "@/lib/format";
@@ -80,6 +81,8 @@ function DefectYAxisTick({
   );
 }
 
+const CHART_HEIGHT_TRANSITION = "transition-[height] duration-[380ms] ease-out";
+
 export function DefectTypeChart({
   data,
   selectedDefectType = null,
@@ -92,14 +95,24 @@ export function DefectTypeChart({
     value: item.value,
   }));
 
-  const chartHeight = Math.max(
+  const scrollMaxHeight = VISIBLE_ROWS * ROW_HEIGHT + CHART_CHROME;
+  const contentHeight = Math.max(
     chartData.length * ROW_HEIGHT + CHART_CHROME,
-    VISIBLE_ROWS * ROW_HEIGHT + CHART_CHROME
+    ROW_HEIGHT + CHART_CHROME
   );
+  const containerHeight = Math.min(contentHeight, scrollMaxHeight);
+
+  if (chartData.length === 0) {
+    return (
+      <div className="flex h-full min-h-[80px] items-center justify-center text-xs text-slate-500">
+        Không có dữ liệu loại lỗi
+      </div>
+    );
+  }
 
   return (
     <div
-      className="flex h-full min-h-0 w-full flex-col"
+      className="flex h-full min-h-0 w-full flex-col justify-start"
       onClick={(e) => {
         if (!selectedDefectType || !onClear) return;
         const target = e.target as Element;
@@ -109,11 +122,11 @@ export function DefectTypeChart({
       }}
     >
       <div
-        className="min-h-0 flex-1 overflow-y-auto"
-        style={{ maxHeight: VISIBLE_ROWS * ROW_HEIGHT + CHART_CHROME }}
+        className={`w-full shrink-0 overflow-hidden overflow-y-auto ${CHART_HEIGHT_TRANSITION}`}
+        style={{ height: containerHeight, maxHeight: scrollMaxHeight }}
       >
-        <div style={{ height: chartHeight }}>
-          <ResponsiveContainer width="100%" height={chartHeight}>
+        <div className={CHART_HEIGHT_TRANSITION} style={{ height: contentHeight }}>
+          <ResponsiveContainer width="100%" height={contentHeight}>
             <BarChart
               data={chartData}
               layout="vertical"
@@ -154,6 +167,7 @@ export function DefectTypeChart({
                 dataKey="value"
                 radius={[0, 4, 4, 0]}
                 barSize={BAR_SIZE}
+                {...pieChartAnimation}
                 className={onDefectTypeSelect ? "cursor-pointer outline-none" : undefined}
                 onClick={(entry) => {
                   const defectType = entry?.fullName ?? entry?.name;
