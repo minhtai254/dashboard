@@ -25,6 +25,9 @@ import { formatNumber } from "@/lib/format";
 
 interface BuyerChartProps {
   data: BuyerDefectStat[];
+  selectedBuyer?: string | null;
+  onBuyerSelect?: (buyer: string) => void;
+  onClear?: () => void;
 }
 
 const LABEL_WIDTH = 148;
@@ -54,31 +57,64 @@ export function BuyerChartLegend() {
 function BuyerYAxisTick({
   y = 0,
   payload,
+  selectedBuyer,
+  onSelect,
 }: {
   x?: number;
   y?: number;
   payload?: { value: string };
+  selectedBuyer?: string | null;
+  onSelect?: (buyer: string) => void;
 }) {
+  const buyer = payload?.value ?? "";
+  const isSelected = selectedBuyer === buyer;
+  const isDimmed = selectedBuyer && selectedBuyer !== buyer;
+
   return (
     <foreignObject x={0} y={y - 10} width={LABEL_WIDTH} height={20}>
-      <div
-        className="overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 text-slate-600"
-        title={payload?.value}
-      >
-        {payload?.value}
-      </div>
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={() => onSelect(buyer)}
+          className={`buyer-chart-label block w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 transition ${
+            isSelected
+              ? "font-semibold text-blue-700"
+              : isDimmed
+                ? "text-slate-400"
+                : "text-slate-600 hover:text-blue-600"
+          }`}
+          title={buyer}
+        >
+          {buyer}
+        </button>
+      ) : (
+        <div
+          className="overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 text-slate-600"
+          title={buyer}
+        >
+          {buyer}
+        </div>
+      )}
     </foreignObject>
   );
 }
 
-export function BuyerChart({ data }: BuyerChartProps) {
-  const chartData = data.map((item) => ({
-    name: item.buyer,
-    fullName: item.buyer,
-    totalDefect: item.totalDefect,
-    defectRate: Number(item.defectRate.toFixed(2)),
-    records: item.records,
-  }));
+export function BuyerChart({
+  data,
+  selectedBuyer = null,
+  onBuyerSelect,
+  onClear,
+}: BuyerChartProps) {
+  const chartData = [...data]
+    .sort((a, b) => b.qtyKgs - a.qtyKgs)
+    .map((item) => ({
+      name: item.buyer,
+      fullName: item.buyer,
+      totalDefect: item.totalDefect,
+      qtyKgs: item.qtyKgs,
+      defectRate: Number(item.defectRate.toFixed(2)),
+      records: item.records,
+    }));
 
   const chartHeight = Math.max(
     chartData.length * ROW_HEIGHT + CHART_CHROME,
@@ -86,7 +122,16 @@ export function BuyerChart({ data }: BuyerChartProps) {
   );
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
+    <div
+      className="flex h-full min-h-0 w-full flex-col"
+      onClick={(e) => {
+        if (!selectedBuyer || !onClear) return;
+        const target = e.target as Element;
+        if (target.closest(".recharts-bar-rectangle")) return;
+        if (target.closest(".buyer-chart-label")) return;
+        onClear();
+      }}
+    >
       <div
         className="min-h-0 flex-1 overflow-y-auto"
         style={{ maxHeight: VISIBLE_ROWS * ROW_HEIGHT + CHART_CHROME }}
@@ -116,7 +161,12 @@ export function BuyerChart({ data }: BuyerChartProps) {
                 axisLine={false}
                 tickLine={false}
                 interval={0}
-                tick={<BuyerYAxisTick />}
+                tick={
+                  <BuyerYAxisTick
+                    selectedBuyer={selectedBuyer}
+                    onSelect={onBuyerSelect}
+                  />
+                }
                 padding={{ top: 0, bottom: 0 }}
               />
               <Tooltip
@@ -136,9 +186,22 @@ export function BuyerChart({ data }: BuyerChartProps) {
                 name="totalDefect"
                 radius={[0, 4, 4, 0]}
                 barSize={BAR_SIZE}
+                className={onBuyerSelect ? "cursor-pointer outline-none" : undefined}
+                onClick={(entry) => {
+                  const buyer = entry?.fullName ?? entry?.name;
+                  if (buyer) onBuyerSelect?.(buyer);
+                }}
               >
-                {chartData.map((_, index) => (
-                  <Cell key={index} fill={PBI_COLORS[index % PBI_COLORS.length]} />
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={entry.name}
+                    fill={PBI_COLORS[index % PBI_COLORS.length]}
+                    stroke={selectedBuyer === entry.name ? "#ffffff" : "transparent"}
+                    strokeWidth={selectedBuyer === entry.name ? 2 : 0}
+                    opacity={
+                      selectedBuyer && selectedBuyer !== entry.name ? 0.4 : 1
+                    }
+                  />
                 ))}
                 <LabelList
                   dataKey="totalDefect"

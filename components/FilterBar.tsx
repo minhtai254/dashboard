@@ -33,6 +33,8 @@ interface FilterBarProps {
   onChange: (filters: DashboardFilters) => void;
   dateFilter: DateFilterState;
   onDateChange: (dateFilter: DateFilterState) => void;
+  chartFiltersActive?: boolean;
+  onClearChartFilters?: () => void;
 }
 
 const FILTER_FIELDS: FilterField[] = ["buyer", "ocNo", "jobOrderNo", "lotNo"];
@@ -157,11 +159,8 @@ function FilterFieldInput({
     ) : null;
 
   return (
-    <div ref={ref} className="relative min-w-0 flex-1">
-      <label className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-        <Icon className="h-2.5 w-2.5" />
-        {FILTER_LABELS[field]}
-      </label>
+    <div ref={ref} className="relative min-w-0 w-full">
+      <Icon className="pointer-events-none absolute left-2.5 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
       <div className="relative">
         <input
           value={value}
@@ -188,8 +187,8 @@ function FilterFieldInput({
               setDropdownOpen(false);
             }
           }}
-          placeholder={`Input ${FILTER_LABELS[field]}`}
-          className={`h-9 w-full rounded-lg border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-14 text-sm outline-none transition ${
+          placeholder={FILTER_LABELS[field]}
+          className={`h-9 w-full rounded-lg border border-slate-200 bg-slate-50/80 py-1.5 pl-8 pr-14 text-sm outline-none transition ${
             isActive
               ? "border-blue-400 bg-blue-50/60 ring-1 ring-blue-200"
               : "hover:border-slate-300 focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-200"
@@ -230,36 +229,47 @@ export function FilterBar({
   onChange,
   dateFilter,
   onDateChange,
+  chartFiltersActive = false,
+  onClearChartFilters,
 }: FilterBarProps) {
-  const active = hasActiveFilters(filters) || hasActiveDateFilter(dateFilter);
+  const active =
+    hasActiveFilters(filters) || hasActiveDateFilter(dateFilter) || chartFiltersActive;
 
   return (
-    <div className="pro-card relative z-30 overflow-visible rounded-[10px] px-4 py-3">
-      <div className="flex items-end gap-3">
-        <div className="grid min-w-0 flex-1 gap-3 overflow-visible sm:grid-cols-2 xl:grid-cols-5">
+    <div className="pro-card relative z-30 overflow-visible rounded-[10px] px-4 py-2.5">
+      <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <DateFilterPicker
             value={dateFilter}
             onChange={onDateChange}
             records={records}
+            className="relative min-w-0 w-full flex-1"
           />
-          {FILTER_FIELDS.map((field) => (
-            <FilterFieldInput
-              key={field}
-              field={field}
-              value={filters[field]}
-              records={records}
-              filters={filters}
-              onChange={(f, v) => onChange({ ...filters, [f]: v })}
-            />
-          ))}
+
+          <div className="hidden h-6 w-px shrink-0 bg-slate-200 sm:block" aria-hidden />
+
+          <div className="grid min-w-0 flex-[4] grid-cols-4 gap-2">
+            {FILTER_FIELDS.map((field) => (
+              <FilterFieldInput
+                key={field}
+                field={field}
+                value={filters[field]}
+                records={records}
+                filters={filters}
+                onChange={(f, v) => onChange({ ...filters, [f]: v })}
+              />
+            ))}
+          </div>
         </div>
+
         <button
           type="button"
           onClick={() => {
             onChange(EMPTY_FILTERS);
             onDateChange(EMPTY_DATE_FILTER);
+            onClearChartFilters?.();
           }}
-          className={`mb-0.5 inline-flex w-[4.5rem] shrink-0 items-center justify-end gap-0.5 text-[10px] font-medium transition ${
+          className={`inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium transition ${
             active
               ? "text-slate-500 hover:text-red-600"
               : "pointer-events-none invisible"

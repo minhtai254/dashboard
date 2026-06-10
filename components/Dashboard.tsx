@@ -19,7 +19,7 @@ import { DefectTypeChart } from "@/components/DefectTypeChart";
 import { FilterBar } from "@/components/FilterBar";
 import { KpiCard } from "@/components/KpiCard";
 import { QtyGradeChart } from "@/components/QtyGradeChart";
-import { Sidebar } from "@/components/Sidebar";
+import { Sidebar, SIDEBAR_WIDTH_COLLAPSED, SIDEBAR_WIDTH_EXPANDED } from "@/components/Sidebar";
 import {
   buildBuyerStats,
   buildDefectCategoryStats,
@@ -34,6 +34,15 @@ import type { DateFilterState } from "@/lib/dateFilter";
 import { formatDateTime, formatNumber, formatPercent } from "@/lib/format";
 import type { DashboardFilters } from "@/lib/filters";
 import type { InspectionData } from "@/lib/types";
+import {
+  EMPTY_CHART_FILTERS,
+  applyChartFilters,
+  applyChartFiltersExcept,
+  hasActiveChartFilters,
+  type ChartFilterState,
+  type DefectCategoryFilter,
+  type QtyGradeFilter,
+} from "@/lib/chartFilters";
 
 type DashboardTab = "quality" | "quantity";
 
@@ -50,6 +59,21 @@ export function Dashboard() {
   const [quantityFilters, setQuantityFilters] = useState<DashboardFilters>(EMPTY_FILTERS);
   const [dateFilter, setDateFilter] = useState<DateFilterState>(EMPTY_DATE_FILTER);
   const [activeTab, setActiveTab] = useState<DashboardTab>("quality");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [chartFilters, setChartFilters] = useState<ChartFilterState>(EMPTY_CHART_FILTERS);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("dashboard-sidebar-collapsed");
+    if (saved !== null) setSidebarCollapsed(saved === "true");
+  }, []);
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("dashboard-sidebar-collapsed", String(next));
+      return next;
+    });
+  }, []);
 
   const loadData = useCallback(async () => {
     setRefreshing(true);
@@ -79,20 +103,73 @@ export function Dashboard() {
     return filterRecords(data.records, filters, dateFilter);
   }, [data, filters, dateFilter]);
 
+  const chartFilteredRecords = useMemo(
+    () => applyChartFilters(filteredRecords, chartFilters),
+    [filteredRecords, chartFilters]
+  );
+
+  const handleCategorySelect = useCallback((category: DefectCategoryFilter) => {
+    setChartFilters((prev) => ({
+      ...prev,
+      defectCategory: prev.defectCategory === category ? null : category,
+    }));
+  }, []);
+
+  const handleGradeSelect = useCallback((grade: QtyGradeFilter) => {
+    setChartFilters((prev) => ({
+      ...prev,
+      qtyGrade: prev.qtyGrade === grade ? null : grade,
+    }));
+  }, []);
+
+  const handleBuyerSelect = useCallback((buyer: string) => {
+    setChartFilters((prev) => ({
+      ...prev,
+      buyer: prev.buyer === buyer ? null : buyer,
+    }));
+  }, []);
+
+  const handleDefectTypeSelect = useCallback((defectType: string) => {
+    setChartFilters((prev) => ({
+      ...prev,
+      defectType: prev.defectType === defectType ? null : defectType,
+    }));
+  }, []);
+
+  const clearChartFilters = useCallback(() => {
+    setChartFilters(EMPTY_CHART_FILTERS);
+  }, []);
+
   const view = useMemo(() => {
     if (!data) return null;
+
+    const defectCategory = chartFilters.defectCategory;
+    const defectType = chartFilters.defectType;
+    const buyerRecords = applyChartFiltersExcept(filteredRecords, chartFilters, ["buyer"]);
+    const categoryRecords = applyChartFiltersExcept(filteredRecords, chartFilters, [
+      "defectCategory",
+    ]);
+    const gradeRecords = applyChartFiltersExcept(filteredRecords, chartFilters, ["qtyGrade"]);
+    const defectTypeRecords = applyChartFiltersExcept(filteredRecords, chartFilters, [
+      "defectType",
+    ]);
+    const gradeWeightCategory =
+      defectCategory && !chartFilters.qtyGrade ? defectCategory : null;
+
     return {
-      summary: buildSummary(filteredRecords),
-      byBuyer: buildBuyerStats(filteredRecords),
-      topDefectTypes: buildDefectTypeStats(filteredRecords),
-      byDefectCategory: buildDefectCategoryStats(filteredRecords),
-      byQtyGrade: buildQtyGradeStats(filteredRecords),
+      summary: buildSummary(chartFilteredRecords, defectCategory, defectType),
+      byBuyer: buildBuyerStats(buyerRecords, defectCategory, defectType),
+      topDefectTypes: buildDefectTypeStats(defectTypeRecords, defectCategory),
+      byDefectCategory: buildDefectCategoryStats(categoryRecords, null, true),
+      byQtyGrade: buildQtyGradeStats(gradeRecords, true, gradeWeightCategory),
     };
-  }, [data, filteredRecords]);
+  }, [data, filteredRecords, chartFilteredRecords, chartFilters]);
 
   const isFiltered =
     activeTab === "quality"
-      ? hasActiveFilters(filters) || hasActiveDateFilter(dateFilter)
+      ? hasActiveFilters(filters) ||
+        hasActiveDateFilter(dateFilter) ||
+        hasActiveChartFilters(chartFilters)
       : hasActiveFilters(quantityFilters) || hasActiveDateFilter(dateFilter);
   const hasData = Boolean(data && view);
 
@@ -104,9 +181,16 @@ export function Dashboard() {
         fetchedAt={
           data ? formatDateTime(data.fetchedAt) : refreshing ? "Đang đồng bộ..." : "—"
         }
+        collapsed={sidebarCollapsed}
+        onToggle={toggleSidebar}
       />
 
-      <main className="ml-[248px] flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <main
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden transition-[margin-left] duration-200 ease-in-out"
+        style={{
+          marginLeft: sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED,
+        }}
+      >
         <header className="z-20 shrink-0 border-b border-slate-200 bg-white px-6 py-2.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
@@ -249,6 +333,8 @@ export function Dashboard() {
                 onChange={setFilters}
                 dateFilter={dateFilter}
                 onDateChange={setDateFilter}
+                chartFiltersActive={hasActiveChartFilters(chartFilters)}
+                onClearChartFilters={clearChartFilters}
               />
             </div>
 
@@ -293,7 +379,12 @@ export function Dashboard() {
                 accent="from-blue-500 to-cyan-500"
                 className="col-span-12 h-full lg:col-span-3"
               >
-                <DefectCategoryChart data={view!.byDefectCategory} />
+                <DefectCategoryChart
+                  data={view!.byDefectCategory}
+                  selectedCategory={chartFilters.defectCategory}
+                  onCategorySelect={handleCategorySelect}
+                  onClear={clearChartFilters}
+                />
               </ChartCard>
 
               <ChartCard
@@ -304,7 +395,12 @@ export function Dashboard() {
                 accent="from-indigo-500 to-purple-600"
                 headerExtra={<BuyerChartLegend />}
               >
-                <BuyerChart data={view!.byBuyer} />
+                <BuyerChart
+                  data={view!.byBuyer}
+                  selectedBuyer={chartFilters.buyer}
+                  onBuyerSelect={handleBuyerSelect}
+                  onClear={clearChartFilters}
+                />
               </ChartCard>
 
               <ChartCard
@@ -314,7 +410,12 @@ export function Dashboard() {
                 accent="from-emerald-500 to-teal-500"
                 className="col-span-12 h-full lg:col-span-3"
               >
-                <QtyGradeChart data={view!.byQtyGrade} />
+                <QtyGradeChart
+                  data={view!.byQtyGrade}
+                  selectedGrade={chartFilters.qtyGrade}
+                  onGradeSelect={handleGradeSelect}
+                  onClear={clearChartFilters}
+                />
               </ChartCard>
 
               <ChartCard
@@ -324,7 +425,12 @@ export function Dashboard() {
                 icon={Trophy}
                 accent="from-amber-500 to-orange-500"
               >
-                <DefectTypeChart data={view!.topDefectTypes} />
+                <DefectTypeChart
+                  data={view!.topDefectTypes}
+                  selectedDefectType={chartFilters.defectType}
+                  onDefectTypeSelect={handleDefectTypeSelect}
+                  onClear={clearChartFilters}
+                />
               </ChartCard>
             </section>
           </div>

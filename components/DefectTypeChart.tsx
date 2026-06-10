@@ -24,6 +24,9 @@ import { formatNumber } from "@/lib/format";
 
 interface DefectTypeChartProps {
   data: DefectTypeStat[];
+  selectedDefectType?: string | null;
+  onDefectTypeSelect?: (defectType: string) => void;
+  onClear?: () => void;
 }
 
 const LABEL_WIDTH = 148;
@@ -35,24 +38,54 @@ const BAR_SIZE = 14;
 function DefectYAxisTick({
   y = 0,
   payload,
+  selectedDefectType,
+  onSelect,
 }: {
   x?: number;
   y?: number;
   payload?: { value: string };
+  selectedDefectType?: string | null;
+  onSelect?: (defectType: string) => void;
 }) {
+  const defectType = payload?.value ?? "";
+  const isSelected = selectedDefectType === defectType;
+  const isDimmed = selectedDefectType && selectedDefectType !== defectType;
+
   return (
     <foreignObject x={0} y={y - 10} width={LABEL_WIDTH} height={20}>
-      <div
-        className="overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 text-slate-600"
-        title={payload?.value}
-      >
-        {payload?.value}
-      </div>
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={() => onSelect(defectType)}
+          className={`defect-type-chart-label block w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 transition ${
+            isSelected
+              ? "font-semibold text-blue-700"
+              : isDimmed
+                ? "text-slate-400"
+                : "text-slate-600 hover:text-blue-600"
+          }`}
+          title={defectType}
+        >
+          {defectType}
+        </button>
+      ) : (
+        <div
+          className="overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs leading-5 text-slate-600"
+          title={defectType}
+        >
+          {defectType}
+        </div>
+      )}
     </foreignObject>
   );
 }
 
-export function DefectTypeChart({ data }: DefectTypeChartProps) {
+export function DefectTypeChart({
+  data,
+  selectedDefectType = null,
+  onDefectTypeSelect,
+  onClear,
+}: DefectTypeChartProps) {
   const chartData = data.map((item) => ({
     name: item.name,
     fullName: item.name,
@@ -65,7 +98,16 @@ export function DefectTypeChart({ data }: DefectTypeChartProps) {
   );
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
+    <div
+      className="flex h-full min-h-0 w-full flex-col"
+      onClick={(e) => {
+        if (!selectedDefectType || !onClear) return;
+        const target = e.target as Element;
+        if (target.closest(".recharts-bar-rectangle")) return;
+        if (target.closest(".defect-type-chart-label")) return;
+        onClear();
+      }}
+    >
       <div
         className="min-h-0 flex-1 overflow-y-auto"
         style={{ maxHeight: VISIBLE_ROWS * ROW_HEIGHT + CHART_CHROME }}
@@ -93,7 +135,12 @@ export function DefectTypeChart({ data }: DefectTypeChartProps) {
                 axisLine={false}
                 tickLine={false}
                 interval={0}
-                tick={<DefectYAxisTick />}
+                tick={
+                  <DefectYAxisTick
+                    selectedDefectType={selectedDefectType}
+                    onSelect={onDefectTypeSelect}
+                  />
+                }
                 padding={{ top: 0, bottom: 0 }}
               />
               <Tooltip
@@ -103,9 +150,26 @@ export function DefectTypeChart({ data }: DefectTypeChartProps) {
                   payload?.[0]?.payload?.fullName ?? ""
                 }
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={BAR_SIZE}>
-                {chartData.map((_, index) => (
-                  <Cell key={index} fill={PBI_COLORS[index % PBI_COLORS.length]} />
+              <Bar
+                dataKey="value"
+                radius={[0, 4, 4, 0]}
+                barSize={BAR_SIZE}
+                className={onDefectTypeSelect ? "cursor-pointer outline-none" : undefined}
+                onClick={(entry) => {
+                  const defectType = entry?.fullName ?? entry?.name;
+                  if (defectType) onDefectTypeSelect?.(defectType);
+                }}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={entry.name}
+                    fill={PBI_COLORS[index % PBI_COLORS.length]}
+                    stroke={selectedDefectType === entry.name ? "#ffffff" : "transparent"}
+                    strokeWidth={selectedDefectType === entry.name ? 2 : 0}
+                    opacity={
+                      selectedDefectType && selectedDefectType !== entry.name ? 0.4 : 1
+                    }
+                  />
                 ))}
                 <LabelList
                   dataKey="value"

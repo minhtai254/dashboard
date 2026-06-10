@@ -17,11 +17,24 @@ export const CATEGORY_COLORS = {
   N: "#ef4444",
 };
 
+export const CATEGORY_LEGEND_TEXT = {
+  S: "#60a5fa",
+  D: "#fb923c",
+  N: "#f87171",
+};
+
 export const GRADE_COLORS = {
   A: "#22c55e",
   B: "#eab308",
   C: "#f97316",
   X: "#ef4444",
+};
+
+export const GRADE_LEGEND_TEXT = {
+  A: "#4ade80",
+  B: "#facc15",
+  C: "#fb923c",
+  X: "#f87171",
 };
 
 export const tooltipStyle = {
@@ -37,6 +50,12 @@ export const tooltipStyle = {
 export const chartAxisFontSize = 12;
 export const chartBarLabelFontSize = 12;
 export const chartPieLabelFontSize = 13;
+export const pieChartAnimation = {
+  isAnimationActive: true,
+  animationBegin: 0,
+  animationDuration: 380,
+  animationEasing: "ease-out" as const,
+};
 export const chartLegendStyle = {
   fontSize: 11,
   paddingTop: 4,

@@ -73,7 +73,7 @@ export function DateFilterPicker({
   value,
   onChange,
   records,
-  className = "relative min-w-0 flex-1",
+  className = "relative min-w-0 w-full",
 }: DateFilterPickerProps) {
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => new Date());
@@ -225,24 +225,21 @@ export function DateFilterPicker({
 
   return (
     <div ref={ref} className={className}>
-      <label className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-        <Calendar className="h-2.5 w-2.5" />
-        Date
-      </label>
+      <Calendar className="pointer-events-none absolute left-2.5 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
       <div className="relative">
         <button
           type="button"
           onClick={() => setOpen((current) => !current)}
-          className={`flex h-9 w-full items-center rounded-lg border py-1.5 pl-3 pr-14 text-left text-sm outline-none transition ${
+          className={`flex h-9 w-full items-center rounded-lg border border-slate-200 bg-slate-50/80 py-1.5 pl-8 pr-14 text-left text-sm outline-none transition ${
             isActive
-              ? "border-blue-400 bg-blue-50/60 text-slate-800 ring-1 ring-blue-200"
+              ? "border-blue-400 bg-blue-50/60 ring-1 ring-blue-200"
               : open
                 ? "border-blue-400 bg-white ring-1 ring-blue-200"
-                : "border-slate-200 bg-slate-50/80 text-slate-400 hover:border-slate-300"
+                : "hover:border-slate-300 focus:border-blue-400 focus:bg-white focus:ring-1 focus:ring-blue-200"
           }`}
         >
-          <span className={`truncate ${isActive ? "font-medium text-slate-800" : ""}`}>
-            {isActive ? formatDateFilterLabel(value) : "Input date"}
+          <span className={`truncate ${isActive ? "text-slate-800" : "text-slate-400"}`}>
+            {isActive ? formatDateFilterLabel(value) : "Date"}
           </span>
         </button>
         <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
