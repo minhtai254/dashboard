@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { LabelProps } from "recharts";
 import type { BuyerDefectStat } from "@/lib/types";
 import {
   PBI_COLORS,
@@ -83,25 +84,27 @@ function useAnimatedNumber(target: number, duration = RATE_ANIMATION_MS): number
   return display;
 }
 
-function RatePointLabel({
-  x = 0,
-  y = 0,
-  value,
-}: {
-  x?: number;
-  y?: number;
-  value?: number;
-}) {
-  const animatedValue = useAnimatedNumber(value ?? 0);
+function RatePointLabel({ x, y, value }: LabelProps) {
+  const numericValue =
+    typeof value === "number" ? value : value != null ? Number(value) : NaN;
+  const animatedValue = useAnimatedNumber(
+    Number.isFinite(numericValue) ? numericValue : 0,
+  );
 
-  if (value == null) return null;
+  if (value == null || value === "" || !Number.isFinite(numericValue)) {
+    return null;
+  }
+
+  const xPos = typeof x === "number" ? x : Number(x);
+  const yPos = typeof y === "number" ? y : Number(y);
+  if (!Number.isFinite(xPos) || !Number.isFinite(yPos)) return null;
 
   const label = `${formatNumber(animatedValue)}%`;
 
   return (
     <text
-      x={x}
-      y={y - RATE_LABEL_OFFSET}
+      x={xPos}
+      y={yPos - RATE_LABEL_OFFSET}
       fill={buyerDefectRateColor}
       fontSize={RATE_LABEL_FONT_SIZE}
       fontWeight={700}
